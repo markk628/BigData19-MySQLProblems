@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<diagram version="1" name="HW1payment-rental-customer.erd">
+	<entities>
+		<data-source id="mysql8-19415dd403c-4d8f396cb1c7b951">
+			<entity id="1" name="payment" fq-name="sakila.payment" order="0" x="40" y="160">
+				<path name="sakila"/>
+			</entity>
+			<entity id="2" name="rental" fq-name="sakila.rental" order="1" x="240" y="40">
+				<path name="sakila"/>
+			</entity>
+			<entity id="3" name="staff" fq-name="sakila.staff" order="2" x="420" y="120">
+				<path name="sakila"/>
+			</entity>
+		</data-source>
+	</entities>
+	<relations>
+		<relation name="fk_payment_rental" fq-name="sakila.payment.fk_payment_rental" type="fk" pk-ref="2" fk-ref="1"/>
+		<relation name="fk_payment_staff" fq-name="sakila.payment.fk_payment_staff" type="fk" pk-ref="3" fk-ref="1"/>
+		<relation name="fk_rental_staff" fq-name="sakila.rental.fk_rental_staff" type="fk" pk-ref="3" fk-ref="2"/>
+	</relations>
+</diagram>

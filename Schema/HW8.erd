@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<diagram version="1" name="HW8.erd">
+	<entities>
+		<data-source id="mysql8-19415dd403c-4d8f396cb1c7b951">
+			<entity id="1" name="customer" fq-name="sakila.customer" order="0" x="84" y="86">
+				<path name="sakila"/>
+			</entity>
+			<entity id="2" name="rental" fq-name="sakila.rental" order="1" x="380" y="100">
+				<path name="sakila"/>
+			</entity>
+		</data-source>
+	</entities>
+	<relations>
+		<relation name="fk_rental_customer" fq-name="sakila.rental.fk_rental_customer" type="fk" pk-ref="1" fk-ref="2"/>
+	</relations>
+</diagram>
