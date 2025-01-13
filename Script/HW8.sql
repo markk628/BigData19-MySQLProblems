@@ -1,80 +1,30 @@
 USE sakila;
 
-SELECT r.customer_id,
-	   rt.customer_name,
-	   (rt.rental_time / COUNT(r.rental_id)) AS avg_rental_interval 
-  FROM (
-  	SELECT c.customer_id,
-  		   CONCAT(c.first_name, ' ', c.last_name) as customer_name,
-  		   SUM(TIMESTAMPDIFF(HOUR, r.rental_date, r.return_date)) AS rental_time
-  	  FROM customer c
- 	 INNER JOIN rental r
- 	    ON c.customer_id = r.customer_id
- 	 WHERE r.return_date IS NOT NULL
-     GROUP BY c.customer_id
-  ) AS rt
- INNER JOIN rental r
- 	ON r.customer_id = rt.customer_id
- GROUP BY r.customer_id 
- ORDER BY avg_rental_interval ASC
-;
+/*
+문제 8: 고객의 평균 대여 간격 분석
+고객들이 평균적으로 얼마나 자주 영화를  대여하는지 분석하여 평균 대여 시간 가장 짧은 고객 5명 조회.
+ - 대여 간격 계산:
+   동일 고객의 대여 날짜(rental_date)를 기준으로 대여 간격을 계산.
+ - 인라인 뷰 사용
 
-SELECT c.customer_id,
-	   CONCAT(c.first_name, ' ', c.last_name) as customer_name,
-	   (rt.time_diff / COUNT(rt.customer_id)) AS avg_rental_interval
-  FROM (
+ */
+
+-- 필요한 value들이 customer와 rental table에 있기때문에 customer + rental table을 만들어야됨
+SELECT c.customer_id, -- 고객의 ID
+	   CONCAT(c.first_name, ' ', c.last_name) AS customer_name, -- 고객의 이름
+	   AVG(DATEDIFF(x.rental_date, x.last_rental_date)) AS time_diff -- 고객의 평균 대여 시간
+  FROM ( -- Inline view에  
   	SELECT r.customer_id,
-  		   DATEDIFF(r.rental_date, r2.rental_date) AS time_diff
-  	  FROM rental r
-  	 INNER JOIN rental r2
-  	 	ON r.customer_id = r2.customer_id
-  	 GROUP BY r.customer_id
-  ) as rt
- INNER JOIN customer c
- 	ON c.customer_id = rt.customer_id
- GROUP BY c.customer_id
- ORDER BY avg_rental_interval
---  LIMIT 5
+	       r.rental_date,
+  		   LAG(r.rental_date) OVER ( -- rental_date기준으로 rental_date 있는 row의 이전 row를 접근할수있게 LAG
+    			PARTITION BY r.customer_id -- PARTITION BY써서 customer_id기준으로 분할과 rental_date기준으로 정렬후
+			    ORDER BY r.rental_date
+			  ) AS last_rental_date 
+	 FROM rental r
+  ) AS x
+ INNER JOIN customer c -- 고객의 성명을 customer_name에 삽입할수있게 JOIN
+ 	ON x.customer_id = c.customer_id
+ GROUP BY x.customer_id -- 고객의 ID순으로 그룹화
+ ORDER BY time_diff
+ LIMIT 5
 ;
-
-
-SELECT TIMESTAMPDIFF(HOUR, r.rental_date, r2.rental_date) 
-  FROM rental r
- INNER JOIN rental r2
-  	ON r.rental_id = r2.rental_id - 1
-  	
-SELECT r.rental_id,
-	   r.rental_date,
-	   r.customer_id,
-	   r2.rental_id,
-	   r2.rental_date,
-	   r2.customer_id
-  FROM rental r
- INNER JOIN rental r2
-  	ON r.customer_id = r2.customer_id 
-
-SELECT r.rental_id,
-	   r2.rental_id,
-	   r.customer_id,
-	   r2.customer_id,
-	   r.rental_date,
-	   r2.rental_date
-  FROM rental r
- INNER JOIN rental r2
-  	ON r.customer_id = r2.customer_id 
- ORDER BY r.customer_id
-;
-
-SELECT r.rental_id,
-	   r2.rental_id,
-	   r.customer_id,
-	   r2.customer_id,
-	   r.rental_date,
-	   r2.rental_date
-  FROM rental r
- INNER JOIN rental r2
-  	ON r.rental_id = r2.rental_id 
- ORDER BY r.customer_id
-;
-
--- rental,rental,customer 
