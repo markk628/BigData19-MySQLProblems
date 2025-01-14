@@ -20,6 +20,7 @@ SELECT s.store_id -- store의 store_id
  ORDER BY s.store_id, month -- staff의 store_id와 month 기준으로 정렬
 ; 
 -- payment와 rental table각각에 여러 row들이 똑같은 staff가 있슬수있어서, staff_id로 연결하면 payment와 해당되지 않은 rental이 붙을수있기때문에 안됌 
+-- cant use inventory table instead of staff because the store_id in inventory table doesn't represents the store a specific movie got rented from
 
 SELECT s.store_id
 	 , DATE_FORMAT(x.payment_date, '%Y-%m') AS month
@@ -36,4 +37,16 @@ SELECT s.store_id
  	ON s.staff_id = x.staff_id
  GROUP BY s.store_id, month
  ORDER BY s.store_id, month
+; 
+
+SELECT i.store_id
+	 , DATE_FORMAT(p.payment_date, '%Y-%m') AS month
+	 , SUM(p.amount) AS total_revenue
+  FROM inventory i
+ INNER JOIN rental r
+ 	ON i.inventory_id = r.inventory_id
+ INNER JOIN payment p
+ 	ON p.rental_id = r.rental_id 
+ GROUP BY i.store_id, month
+ ORDER BY i.store_id, month
 ; 
