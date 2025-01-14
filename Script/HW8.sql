@@ -51,4 +51,28 @@ SELECT c.customer_id,
  LIMIT 5
 ;
 
-  
+WITH x AS (
+	SELECT r.customer_id,
+	       r.rental_date,
+  		   LAG(r.rental_date) 
+  		   OVER (
+    			 PARTITION BY r.customer_id
+			     ORDER BY r.rental_date
+			    ) AS last_rental_date 
+	 FROM rental r
+),
+y AS (
+	SELECT c.customer_id,
+	   CONCAT(c.first_name, ' ', c.last_name) AS customer_name,
+	   AVG(DATEDIFF(x.rental_date, x.last_rental_date)) AS time_diff
+  	 FROM x
+	INNER JOIN customer c
+ 	   ON x.customer_id = c.customer_id
+    GROUP BY x.customer_id
+)
+SELECT RANK()
+	   OVER(ORDER BY y.time_diff) AS customer_rank,
+	   y.customer_name,
+	   y.time_diff
+  FROM y
+;
